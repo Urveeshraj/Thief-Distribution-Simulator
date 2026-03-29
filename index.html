@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Thief Distribution Simulator</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Glass Card */
+.container {
+    backdrop-filter: blur(15px);
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 30px;
+    width: 700px;
+    box-shadow: 0 0 30px rgba(0,255,255,0.2);
+}
+
+/* Title */
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Sliders */
+.control {
+    margin: 15px 0;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+input[type="range"] {
+    width: 100%;
+}
+
+/* Result Box */
+.result {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 12px;
+    background: rgba(0, 255, 255, 0.1);
+}
+
+/* Glow Text */
+.glow {
+    color: cyan;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>Thief Distribution Simulator</h1>
+
+    <div class="control">
+        <label>Number of Thieves: <span id="thiefCount">100</span></label>
+        <input type="range" id="thieves" min="1" max="200" value="100">
+    </div>
+
+    <div class="control">
+        <label>Total Amount: <span id="amountVal">100</span></label>
+        <input type="range" id="amount" min="10" max="1000" value="100">
+    </div>
+
+    <canvas id="chart"></canvas>
+
+    <div class="result">
+        🏆 Best Thief Rank: <span class="glow" id="bestRank"></span><br>
+        💰 Max Amount: <span class="glow" id="bestAmount"></span>
+    </div>
+</div>
+
+<script>
+const thievesSlider = document.getElementById("thieves");
+const amountSlider = document.getElementById("amount");
+
+const thiefCountText = document.getElementById("thiefCount");
+const amountText = document.getElementById("amountVal");
+
+const bestRankEl = document.getElementById("bestRank");
+const bestAmountEl = document.getElementById("bestAmount");
+
+const ctx = document.getElementById("chart").getContext("2d");
+
+let chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [{
+            label: 'Amount per Thief',
+            data: [],
+            borderWidth: 2,
+            tension: 0.3
+        }]
+    },
+    options: {
+        plugins: {
+            legend: {
+                labels: { color: "white" }
+            }
+        },
+        scales: {
+            x: {
+                ticks: { color: "white" }
+            },
+            y: {
+                ticks: { color: "white" }
+            }
+        }
+    }
+});
+
+function calculate() {
+    let n = parseInt(thievesSlider.value);
+    let total = parseFloat(amountSlider.value);
+
+    thiefCountText.innerText = n;
+    amountText.innerText = total;
+
+    let remaining = total;
+    let data = [];
+    let labels = [];
+
+    let maxAmount = 0;
+    let maxRank = 1;
+
+    for (let i = 1; i <= n; i++) {
+        let share = remaining * i / 100;
+
+        data.push(share);
+        labels.push(i);
+
+        if (share > maxAmount) {
+            maxAmount = share;
+            maxRank = i;
+        }
+
+        remaining -= share;
+    }
+
+    chart.data.labels = labels;
+    chart.data.datasets[0].data = data;
+    chart.update();
+
+    bestRankEl.innerText = maxRank;
+    bestAmountEl.innerText = maxAmount.toFixed(3);
+}
+
+thievesSlider.addEventListener("input", calculate);
+amountSlider.addEventListener("input", calculate);
+
+calculate();
+</script>
+
+</body>
+</html>
